@@ -43,7 +43,6 @@ class SMTPClient:
             self._connect()
         else:
             try:
-                # Health check via NOOP equivalent (smtp noop)
                 self._connection.noop()
             except Exception:
                 self.logger.warning("SMTP connection unhealthy, reconnecting...")

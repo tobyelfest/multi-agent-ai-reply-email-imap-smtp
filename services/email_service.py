@@ -9,6 +9,7 @@ This module exposes the same interface as before:
 """
 
 import logging
+import smtplib  # <-- TAMBAHKAN INI
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import List, Optional
@@ -29,7 +30,6 @@ class InboundEmail:
     subject: str
     body: str
     message_id: str
-    # additional fields from parsing
     in_reply_to: Optional[str] = None
     references: Optional[str] = None
 
@@ -90,7 +90,7 @@ class EmailService:
         max_attempts=2,
         base_delay=1.0,
         backoff=2.0,
-        logger=None,  # We'll log inside
+        logger=None,
         raise_on_failure=False
     )
     def fetch_unread_emails(self) -> List[InboundEmail]:
@@ -168,7 +168,6 @@ class EmailService:
             )
         except Exception as exc:
             self.logger.error("send_reply to %s failed: %s", email.sender, exc)
-            # Simulate send for debugging, but don't raise
             self.logger.info("FALLBACK: would have sent reply to %s", email.sender)
 
     def record_processed(self, email: InboundEmail) -> None:

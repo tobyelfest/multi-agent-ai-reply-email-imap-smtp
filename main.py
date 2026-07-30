@@ -17,6 +17,7 @@ from utils.logger import configure_logging
 # Global references for cleanup
 service: Optional[EmailService] = None
 running = True
+logger: logging.Logger = None   # akan diinisialisasi di main()
 
 
 def signal_handler(sig, frame) -> None:
@@ -139,9 +140,10 @@ def process_emails(service: EmailService, settings: Settings, retrying_llm: Retr
 
 
 def main():
-    global service, running
+    global service, running, logger
 
     settings = Settings()
+    logger = configure_logging(settings.log_dir)
     logger.info("Starting AI Email Auto Reply worker...")
 
     # Initialize LLM for relevance classification
@@ -179,5 +181,4 @@ def main():
 
 
 if __name__ == "__main__":
-    logger = configure_logging(Settings().log_dir)
     main()

@@ -1,8 +1,0 @@
-.env
-.venv/
-__pycache__/
-*.py[cod]
-logs/*.log
-outputs/*.txt
-outputs/processed_message_ids.json
-

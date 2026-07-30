@@ -1,1 +1,1 @@
-"""Core infrastructure components."""
+"""Core infrastructure components for email processing."""

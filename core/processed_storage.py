@@ -1,5 +1,5 @@
 """Atomic JSON storage for processed message IDs."""
-
+from typing import Set, Optional
 import json
 import os
 import hashlib

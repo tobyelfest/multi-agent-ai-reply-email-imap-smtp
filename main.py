@@ -4,6 +4,7 @@ import signal
 import time
 import sys
 import logging
+import threading
 from typing import Optional
 
 from config import Settings
@@ -17,13 +18,13 @@ from utils.logger import configure_logging
 # Global references for cleanup
 service: Optional[EmailService] = None
 running = True
-logger: logging.Logger = None   # akan diinisialisasi di main()
 
 
 def signal_handler(sig, frame) -> None:
     """Handle SIGINT/SIGTERM for graceful shutdown."""
     global running
     running = False
+    logger = logging.getLogger("email_ai")
     logger.info("Received shutdown signal, exiting gracefully...")
 
 
@@ -70,12 +71,14 @@ def is_email_relevant(subject: str, body: str, settings: Settings, retrying_llm:
         answer = response.strip().upper()
         return ("RELEVAN" in answer), "ai_classified"
     except Exception as e:
+        logger = logging.getLogger("email_ai")
         logger.error("AI classification failed: %s", e)
         return False, "ai_error"
 
 
 def send_fallback_reply(email, service: EmailService, settings: Settings) -> None:
     """Send a fallback reply when AI processing fails or email is irrelevant."""
+    logger = logging.getLogger("email_ai")
     try:
         service.send_reply(email, settings.fallback_reply_template)
         service.record_processed(email)
@@ -87,6 +90,7 @@ def send_fallback_reply(email, service: EmailService, settings: Settings) -> Non
 
 def process_emails(service: EmailService, settings: Settings, retrying_llm: RetryingLLM) -> None:
     """Fetch and process new emails."""
+    logger = logging.getLogger("email_ai")
     # Try UNSEEN first
     emails = service.fetch_unread_emails()
     if not emails:
@@ -140,8 +144,9 @@ def process_emails(service: EmailService, settings: Settings, retrying_llm: Retr
 
 
 def main():
-    global service, running, logger
+    global service, running
 
+    # Inisialisasi logger di dalam main
     settings = Settings()
     logger = configure_logging(settings.log_dir)
     logger.info("Starting AI Email Auto Reply worker...")
@@ -162,9 +167,13 @@ def main():
 
     service = EmailService(settings, logger)
 
-    # Register signal handlers
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
+    # Register signal handlers only if running in main thread
+    if threading.current_thread() is threading.main_thread():
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
+        logger.info("Signal handlers registered in main thread.")
+    else:
+        logger.info("Running in worker thread, signal handlers not registered.")
 
     while running:
         try:

@@ -4,7 +4,7 @@ import email
 import re
 from email.header import decode_header
 from email.policy import default
-from typing import Optional, Tuple
+from typing import Optional
 from html.parser import HTMLParser
 
 
@@ -72,10 +72,7 @@ def extract_plain_text_from_message(msg) -> str:
 
 
 def clean_email_body(body: str) -> str:
-    """Remove quoted replies, signatures, and leading/trailing whitespace.
-
-    This is a basic implementation; can be extended with more heuristics.
-    """
+    """Remove quoted replies, signatures, and leading/trailing whitespace."""
     lines = body.splitlines()
     cleaned = []
     quote_pattern = re.compile(r"^>\s*")
@@ -105,7 +102,6 @@ class EmailParser:
         body = extract_plain_text_from_message(msg)
         body = clean_email_body(body)
         message_id = msg.get("Message-ID", "").strip()
-        # Also get References and In-Reply-To if needed
         in_reply_to = msg.get("In-Reply-To", "").strip()
         references = msg.get("References", "").strip()
 

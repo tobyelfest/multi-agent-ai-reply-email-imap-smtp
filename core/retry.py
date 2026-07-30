@@ -3,7 +3,7 @@
 import time
 import logging
 from functools import wraps
-from typing import Callable, Type, Tuple, Optional, Any
+from typing import Callable, Type, Tuple, Optional
 
 
 class RetryError(Exception):
